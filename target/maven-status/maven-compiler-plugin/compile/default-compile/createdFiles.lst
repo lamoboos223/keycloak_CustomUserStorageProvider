@@ -1,0 +1,8 @@
+gov\twk\auth\provider\user\CustomUserStorageProviderConstants.class
+gov\twk\auth\provider\user\UserRoleModel.class
+gov\twk\auth\provider\user\UserGroupModel.class
+gov\twk\auth\provider\user\CustomUserStorageProvider$1.class
+gov\twk\auth\provider\user\CustomUserStorageProviderFactory.class
+gov\twk\auth\provider\user\UserRepresentation.class
+gov\twk\auth\provider\user\DbUtil.class
+gov\twk\auth\provider\user\CustomUserStorageProvider.class
