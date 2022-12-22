@@ -189,8 +189,10 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
     @Override
     public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults) {
 //        TODO: fix the group member display
-//        return (List<UserModel>) ksession.userFederatedStorage().getMembershipStream(realm, group, firstResult, maxResults);
-        return Collections.emptyList();
+//        return ksession.userFederatedStorage().getMembership(realm, group, firstResult, maxResults);
+        return ksession.userLocalStorage().getGroupMembers(realm, group, firstResult, maxResults);
+
+//        return Collections.emptyList();
     }
 
     @Override
@@ -250,7 +252,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
                     model.get(CustomUserStorageProviderConstants.CONFIG_KEY_DB_ROLES_TABLE_NAME),
                     model.get(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_USER_ID_FIELD_NAME)
                     );
-            log.info("[ROLE QUERY] " + rolesQuery);
             PreparedStatement rolesPreparedStatement = connection.prepareStatement(rolesQuery);
             rolesPreparedStatement.setString(1, username);
             rolesPreparedStatement.execute();
@@ -325,7 +326,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         userRepresentation.setSingleAttribute("email", userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_EMAIL_FIELD_NAME)));
 //        userRepresentation.setSingleAttribute("password", userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_FIELD_NAME)));
 
-//        TODO: add user's roles
         ArrayList<String> roles = mapRolesToUser(userRepresentation, rolesResultSet);
         userRepresentation.setRoles(roles);
         return userRepresentation;
@@ -350,7 +350,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
 
     @Override
     public boolean removeUser(RealmModel realmModel, UserModel userModel) {
-//        log.warn(String.format("TODO: %s has been deleted", userModel.getUsername()));
         return true;
     }
 
