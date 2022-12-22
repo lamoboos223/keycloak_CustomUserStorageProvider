@@ -1,21 +1,27 @@
 package gov.twk.auth.provider.user;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.RoleModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.storage.StorageId;
 import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
 
-import java.util.List;
-import java.util.Map;
+import javax.management.relation.Role;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 public class UserRepresentation extends AbstractUserAdapterFederatedStorage {
     private String username;
     private String email;
     private String firstName;
     private String lastName;
+    private List<String> roles;
 
 
 
@@ -99,5 +105,21 @@ public class UserRepresentation extends AbstractUserAdapterFederatedStorage {
     @Override
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    @Override
+    protected Set<RoleModel> getRoleMappingsInternal() {
+        if (getRoles() != null) {
+            return getRoles().stream().map(roleName -> new UserRoleModel(roleName, realm)).collect(Collectors.toSet());
+        }
+        return Set.of();
     }
 }

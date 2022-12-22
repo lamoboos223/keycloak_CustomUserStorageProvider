@@ -21,7 +21,7 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
     protected final List<ProviderConfigProperty> configMetadata;
     
     public CustomUserStorageProviderFactory() {
-        log.info("[I24] CustomUserStorageProviderFactory created");
+//        log.info("[I24] CustomUserStorageProviderFactory created");
         
         
         // Create config metadata
@@ -45,28 +45,42 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_USERS_TABLE_NAME)
                 .label("Users Table Name")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("us_users")
+                .defaultValue("us_users1")
                 .helpText("Name of the users table in the database")
                 .add()
             .property()
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_ROLES_TABLE_NAME)
                 .label("Roles Table Name")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("roles")
+                .defaultValue("us_roles")
                 .helpText("Name of the roles table in the database")
+                .add()
+            .property()
+                .name(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_NAME_FIELD_NAME)
+                .label("Role Field Name")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue("roleName")
+                .helpText("Name of the role column in the roles table")
+                .add()
+            .property()
+                .name(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_USER_ID_FIELD_NAME)
+                .label("Role-User ID field")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .defaultValue("usernameid")
+                .helpText("Name of the foreign key column in the roles table")
                 .add()
             .property()
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_USER_FIRST_NAME_FIELD_NAME)
                 .label("Firstname Column")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("first_name_1")
+                .defaultValue("first_name")
                 .helpText("The Column name that represents firstname of the user")
                 .add()
             .property()
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_USER_LAST_NAME_FIELD_NAME)
                 .label("Last Column")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("last_name_1")
+                .defaultValue("last_name")
                 .helpText("The Column name that represents lastname of the user")
                 .add()
             .property()
@@ -87,7 +101,7 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_FIELD_NAME)
                 .label("Password Column")
                 .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("psd")
+                .defaultValue("school")
                 .helpText("The Column name that represents password of the user")
                 .add()
           .property()
@@ -118,7 +132,7 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
 
     @Override
     public CustomUserStorageProvider create(KeycloakSession ksession, ComponentModel model) {
-        log.info("[I63] creating new CustomUserStorageProvider");
+//        log.info("[I63] creating new CustomUserStorageProvider");
         Connection connection = null;
         try {
             connection = DbUtil.getConnection(model);
@@ -143,23 +157,23 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
        try (Connection c = DbUtil.getConnection(config)) {
-           log.info("[I84] Testing connection..." );
+//           log.info("[I84] Testing connection..." );
            c.createStatement().execute(config.get(CustomUserStorageProviderConstants.CONFIG_KEY_VALIDATION_QUERY));
-           log.info("[I92] Connection OK !" );
+//           log.info("[I92] Connection OK !" );
        }
        catch(Exception ex) {
-           log.warn("[W94] Unable to validate connection: ex={}", ex.getMessage());
+//           log.warn("[W94] Unable to validate connection: ex={}", ex.getMessage());
            throw new ComponentValidationException("Unable to validate database connection",ex);
        }
     }
 
     @Override
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-        log.info("[I94] onUpdate()" );
+//        log.info("[I94] onUpdate()" );
     }
 
     @Override
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
-        log.info("[I99] onCreate()" );
+//        log.info("[I99] onCreate()" );
     }
 }

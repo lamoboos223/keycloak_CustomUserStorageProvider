@@ -13,4 +13,7 @@ public final class CustomUserStorageProviderConstants {
     public static final String CONFIG_KEY_USER_USERNAME_FIELD_NAME = "username";
     public static final String CONFIG_KEY_USER_PASSWORD_FIELD_NAME = "password";
     public static final String CONFIG_KEY_USER_EMAIL_FIELD_NAME = "email";
+    public static final String CONFIG_KEY_ROLE_NAME_FIELD_NAME = "roleName";
+    public static final String CONFIG_KEY_ROLE_USER_ID_FIELD_NAME = "roleUserId";
+
 }

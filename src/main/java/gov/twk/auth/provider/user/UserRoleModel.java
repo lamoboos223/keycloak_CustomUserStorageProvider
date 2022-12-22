@@ -15,8 +15,14 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class UserRoleModel implements RoleModel {
 
-    private final String name;
-    private final RealmModel realm;
+    private String name;
+    private RealmModel realm;
+
+
+    public UserRoleModel(String name, RealmModel realm) {
+        this.name = name;
+        this.realm = realm;
+    }
 
     @Override
     public String getName() {
@@ -25,7 +31,7 @@ public class UserRoleModel implements RoleModel {
 
     @Override
     public String getDescription() {
-        return null;
+        return "null";
     }
 
     @Override
@@ -40,7 +46,8 @@ public class UserRoleModel implements RoleModel {
 
     @Override
     public void setName(String s) {
-        throw new ReadOnlyException("role is read only");
+        this.name = s;
+//        throw new ReadOnlyException("role is read only");
     }
 
     @Override
@@ -107,4 +114,5 @@ public class UserRoleModel implements RoleModel {
     public Map<String, List<String>> getAttributes() {
         return Map.of();
     }
+
 }
