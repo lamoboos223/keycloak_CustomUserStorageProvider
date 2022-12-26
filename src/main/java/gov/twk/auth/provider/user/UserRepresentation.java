@@ -12,6 +12,7 @@ import org.keycloak.storage.StorageId;
 import org.keycloak.storage.adapter.AbstractUserAdapterFederatedStorage;
 
 import javax.management.relation.Role;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -117,9 +118,14 @@ public class UserRepresentation extends AbstractUserAdapterFederatedStorage {
 
     @Override
     protected Set<RoleModel> getRoleMappingsInternal() {
-        if (getRoles() != null) {
-            return getRoles().stream().map(roleName -> new UserRoleModel(roleName, realm)).collect(Collectors.toSet());
+        try {
+            if (getRoles() != null) {
+                return getRoles().stream().map(roleName -> new UserRoleModel(roleName, realm)).collect(Collectors.toSet());
+            }
+            return Set.of();
+        }catch (Exception e){
+            log.error("[ROLE Mapping Exception] " + e.getMessage());
         }
-        return Set.of();
+        return null;
     }
 }

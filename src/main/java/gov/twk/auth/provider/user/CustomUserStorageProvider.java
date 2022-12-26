@@ -9,8 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.component.ComponentModel;
@@ -24,8 +22,6 @@ import org.keycloak.storage.adapter.AbstractUserAdapter;
 import org.keycloak.storage.user.UserLookupProvider;
 import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
-
-import javax.management.relation.Role;
 
 
 @Slf4j
@@ -66,7 +62,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             st.execute();
             ResultSet rs = st.getResultSet();
             if ( rs.next()) {
-                return mapUser(realm,rs);
+                return mapUsers(realm,rs);
             }
             else {
                 return null;
@@ -167,7 +163,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             ResultSet rs = st.getResultSet();
             List<UserModel> users = new ArrayList<>();
             while(rs.next()) {
-                users.add(mapUser(realm,rs));
+                users.add(mapUsers(realm,rs));
             }
             return users;
         }
@@ -188,7 +184,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
 
     @Override
     public List<UserModel> getGroupMembers(RealmModel realm, GroupModel group, int firstResult, int maxResults) {
-//        TODO: fix the group member display
 //        return ksession.userFederatedStorage().getMembership(realm, group, firstResult, maxResults);
         return ksession.userLocalStorage().getGroupMembers(realm, group, firstResult, maxResults);
 
@@ -223,7 +218,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             ResultSet rs = st.getResultSet();
             List<UserModel> users = new ArrayList<>();
             while(rs.next()) {
-                users.add(mapUser(realm,rs));
+                users.add(mapUsers(realm,rs));
             }
             return users;
         }
@@ -245,20 +240,9 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             userPreparedStatement.execute();
             ResultSet userResultSet = userPreparedStatement.getResultSet();
 
-//            Roles Query
-//            todo: maybe the foreign key isn't always the username, i need to get that addressed
-            String rolesQuery = String.format("select %s from %s where %s = ?",
-                    model.get(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_NAME_FIELD_NAME),
-                    model.get(CustomUserStorageProviderConstants.CONFIG_KEY_DB_ROLES_TABLE_NAME),
-                    model.get(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_USER_ID_FIELD_NAME)
-                    );
-            PreparedStatement rolesPreparedStatement = connection.prepareStatement(rolesQuery);
-            rolesPreparedStatement.setString(1, username);
-            rolesPreparedStatement.execute();
-            ResultSet rolesResultSet = rolesPreparedStatement.getResultSet();
 
             if (userResultSet.next()) {
-                return mapGetUser(realm,userResultSet, rolesResultSet);
+                return mapSingleUser(realm,userResultSet);
             }
             else {
                 return null;
@@ -269,7 +253,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         }
     }
 
-    private UserModel mapUser(RealmModel realm, ResultSet rs) throws SQLException {
+    private UserModel mapUsers(RealmModel realm, ResultSet rs) throws SQLException {
         UserRepresentation userRepresentation = new UserRepresentation(ksession, realm, model);
         int columns = rs.getMetaData().getColumnCount();
 
@@ -300,7 +284,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         return userRepresentation;
     }
 
-    private UserModel mapGetUser(RealmModel realm, ResultSet userResultSet, ResultSet rolesResultSet) throws SQLException {
+    private UserModel mapSingleUser(RealmModel realm, ResultSet userResultSet) throws SQLException {
         UserRepresentation userRepresentation = new UserRepresentation(ksession, realm, model);
         int columns = userResultSet.getMetaData().getColumnCount();
 
@@ -311,7 +295,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             if(key.equals(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_USERNAME_FIELD_NAME))) {
                 userRepresentation.setUsername(value);
             }
-            else if(key.equals(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_FIELD_NAME)) || key.equals("password") ||
+            else if(key.equals(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_FIELD_NAME)) || key.equals(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_FIELD_NAME) ||
                     key.equals(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_FIRST_NAME_FIELD_NAME)) ||
                     key.equals(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_LAST_NAME_FIELD_NAME)) ||
                     key.equals(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_EMAIL_FIELD_NAME))) {
@@ -321,23 +305,31 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             else
                 userRepresentation.setSingleAttribute(key, value);
         }
-        userRepresentation.setSingleAttribute("firstName", userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_FIRST_NAME_FIELD_NAME)));
-        userRepresentation.setSingleAttribute("lastName", userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_LAST_NAME_FIELD_NAME)));
-        userRepresentation.setSingleAttribute("email", userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_EMAIL_FIELD_NAME)));
-//        userRepresentation.setSingleAttribute("password", userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_FIELD_NAME)));
+        userRepresentation.setSingleAttribute(UserModel.FIRST_NAME, userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_FIRST_NAME_FIELD_NAME)));
+        userRepresentation.setSingleAttribute(UserModel.LAST_NAME, userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_LAST_NAME_FIELD_NAME)));
+        userRepresentation.setSingleAttribute(UserModel.EMAIL, userResultSet.getString(model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_EMAIL_FIELD_NAME)));
 
-        ArrayList<String> roles = mapRolesToUser(userRepresentation, rolesResultSet);
-        userRepresentation.setRoles(roles);
+        userRepresentation.setRoles(getUserRoles(userRepresentation.getUsername()));
         return userRepresentation;
     }
 
 
-    private ArrayList<String>  mapRolesToUser(UserRepresentation userRepresentation, ResultSet rolesResultSet){
-        ArrayList<String> roles = new ArrayList<>();
+    private ArrayList <String> getUserRoles(String username){
+        ArrayList <String> roles = new ArrayList<>();
         try{
-        while(rolesResultSet.next()) {
-            String roleName = rolesResultSet.getString(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_NAME_FIELD_NAME);
-            roles.add(roleName);
+//            todo: maybe the foreign key isn't always the username, i need to get that addressed
+            String rolesQuery = String.format("select %s from %s where %s = ?",
+                    model.get(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_NAME_FIELD_NAME),
+                    model.get(CustomUserStorageProviderConstants.CONFIG_KEY_DB_ROLES_TABLE_NAME),
+                    model.get(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_USER_ID_FIELD_NAME)
+            );
+            PreparedStatement rolesPreparedStatement = connection.prepareStatement(rolesQuery);
+            rolesPreparedStatement.setString(1, username);
+            rolesPreparedStatement.execute();
+            ResultSet rolesResultSet = rolesPreparedStatement.getResultSet();
+            while(rolesResultSet.next()) {
+                String roleName = rolesResultSet.getString(CustomUserStorageProviderConstants.CONFIG_KEY_ROLE_NAME_FIELD_NAME);
+                roles.add(roleName);
         }}catch (SQLException ex){
             log.error("[ERROR] SQL Exception in role mapping");
         }
