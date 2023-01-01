@@ -89,6 +89,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
 //        return true;
     }
 
+//    TODO: what if there's some salt in the hash
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
 //        log.info("[I57] isValid(realm={},user={},credentialInput.type={})",realm.getName(), user.getUsername(), credentialInput.getType());
@@ -114,14 +115,20 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
 //                return pwd.equals(credentialInput.getChallengeResponse());
                 String hex = null;
                 switch (passwordHash){
+                    case ("PlainText"):
+                        hex = credentialInput.getChallengeResponse();
+                        break;
                     case ("MD5"):
                         hex = DigestUtils.md5Hex(credentialInput.getChallengeResponse());
                         break;
                     case ("SHA1"):
                         hex = DigestUtils.sha1Hex(credentialInput.getChallengeResponse());
                         break;
-                    case ("PlainText"):
-                        hex = credentialInput.getChallengeResponse();
+                    case ("SHA256"):
+                        hex = DigestUtils.sha256Hex(credentialInput.getChallengeResponse());
+                        break;
+                    case ("SHA512"):
+                        hex = DigestUtils.sha512Hex(credentialInput.getChallengeResponse());
                         break;
                 }
                 return pwd.equals(hex);

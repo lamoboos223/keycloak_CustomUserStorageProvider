@@ -137,7 +137,7 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                 .label("Password Hash Function")
                 .type(ProviderConfigProperty.LIST_TYPE)
                 .defaultValue("MD5")
-                .options(asList("PlainText", "SHA1", "MD5"))
+                .options(asList("PlainText", "MD5", "SHA1", "SHA256", "SHA512"))
                 .helpText("Password Hash Function for encryption when authentication")
                 .add()
 
