@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
@@ -85,16 +86,19 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         // In our case, password is the only type of credential, so we always return 'true' if
         // this is the credentialType
         return supportsCredentialType(credentialType);
+//        return true;
     }
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
 //        log.info("[I57] isValid(realm={},user={},credentialInput.type={})",realm.getName(), user.getUsername(), credentialInput.getType());
-        if( !this.supportsCredentialType(credentialInput.getType())) {
+        if(!this.supportsCredentialType(credentialInput.getType())) {
             return false;
         }
         StorageId sid = new StorageId(user.getId());
         String username = sid.getExternalId();
+        String passwordHash = model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_HASH_NAME);
+        log.info("Hash Function is: " + passwordHash);
 
         try{
             String query = String.format("select %s from %s where %s = ?",
@@ -105,9 +109,22 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             st.setString(1, username);
             st.execute();
             ResultSet rs = st.getResultSet();
-            if ( rs.next()) {
+            if (rs.next()) {
                 String pwd = rs.getString(1);
-                return pwd.equals(credentialInput.getChallengeResponse());
+//                return pwd.equals(credentialInput.getChallengeResponse());
+                String hex = null;
+                switch (passwordHash){
+                    case ("MD5"):
+                        hex = DigestUtils.md5Hex(credentialInput.getChallengeResponse());
+                        break;
+                    case ("SHA1"):
+                        hex = DigestUtils.sha1Hex(credentialInput.getChallengeResponse());
+                        break;
+                    case ("PlainText"):
+                        hex = credentialInput.getChallengeResponse();
+                        break;
+                }
+                return pwd.equals(hex);
             }
             else {
                 return false;

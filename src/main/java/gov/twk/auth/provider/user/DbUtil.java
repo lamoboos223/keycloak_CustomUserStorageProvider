@@ -11,15 +11,24 @@ import static gov.twk.auth.provider.user.CustomUserStorageProviderConstants.*;
 public class DbUtil {
 
     public static Connection getConnection(ComponentModel config) throws SQLException{
-        String driverClass = config.get(CONFIG_KEY_JDBC_DRIVER);
-        try {
-            Class.forName(driverClass);
+        String dbConnectionUrl = null;
+        String ip = config.get(CONFIG_KEY_DB_IP);
+        String port = config.get(CONFIG_KEY_DB_PORT);
+        String dbName = config.get(CONFIG_KEY_DB_NAME);
+
+        switch (config.get(CONFIG_KEY_DB_TYPE)){
+            case ("MSSQL"):
+                dbConnectionUrl = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;", ip, port, dbName);
+                break;
+            case ("MySQL"):
+                dbConnectionUrl = String.format("jdbc:mysql://%s:%s/%s", ip, port, dbName);
+                break;
+            case("Postgres"):
+                dbConnectionUrl = String.format("jdbc:postgresql://%s:%s/%s", ip, port, dbName);
+                break;
         }
-        catch(ClassNotFoundException nfe) {
-            throw new RuntimeException("Invalid JDBC driver: " + driverClass + ". Please check if your driver if properly installed");
-        }
-        return DriverManager.getConnection(config.get(CONFIG_KEY_JDBC_URL),
-          config.get(CONFIG_KEY_DB_USERNAME),
-          config.get(CONFIG_KEY_DB_PASSWORD));
+        return DriverManager.getConnection(dbConnectionUrl,
+                config.get(CONFIG_KEY_DB_USERNAME),
+                config.get(CONFIG_KEY_DB_PASSWORD));
     }
 }
