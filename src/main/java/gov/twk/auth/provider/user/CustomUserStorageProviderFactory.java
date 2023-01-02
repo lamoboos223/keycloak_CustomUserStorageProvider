@@ -25,7 +25,8 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                     .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_TYPE)
                     .label("Database Type")
                     .type(ProviderConfigProperty.LIST_TYPE)
-                    .defaultValue("MSSQL")
+//                .defaultValue("MSSQL")
+                .defaultValue("Postgres")
                     .options(asList("MSSQL", "Postgres", "MySQL"))
                     .helpText("Database type")
                     .add()
@@ -47,7 +48,8 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                     .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_PORT)
                     .label("Database Port")
                     .type(ProviderConfigProperty.STRING_TYPE)
-                    .defaultValue("1433")
+//                .defaultValue("1433")
+                .defaultValue("5432")
                     .helpText("Database Port")
                     .add()
             .property()
@@ -55,14 +57,16 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                     .label("Database User")
                     .type(ProviderConfigProperty.STRING_TYPE)
                     .helpText("Username used to connect to the database")
-                    .defaultValue("sa")
-                    .add()
+//                    .defaultValue("sa")
+                .defaultValue("postgres")
+                .add()
             .property()
                     .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_PASSWORD)
                     .label("Database Password")
                     .type(ProviderConfigProperty.STRING_TYPE)
                     .helpText("Password used to connect to the database")
-                    .defaultValue("Keycloak@123")
+//                .defaultValue("Keycloak@123")
+                .defaultValue("postgres")
                     .secret(true)
                     .add()
             .property()
@@ -149,11 +153,13 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
     @Override
     public CustomUserStorageProvider create(KeycloakSession ksession, ComponentModel model) {
         Connection connection = null;
-        try {
-            connection = DbUtil.getConnection(model);
-        } catch(SQLException ex) {
-            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
-        }
+//        try {
+//            connection = DbUtil.getConnection(model);
+//        } catch(SQLException ex) {
+//            throw new RuntimeException("Database error:" + ex.getMessage(),ex);
+//        }
+        connection = DbUtil.getConnection(model);
+
         return new CustomUserStorageProvider(ksession,model, connection);
     }
 
@@ -174,7 +180,7 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
            c.createStatement().execute(config.get(CustomUserStorageProviderConstants.CONFIG_KEY_VALIDATION_QUERY));
        }
        catch(Exception ex) {
-           throw new ComponentValidationException("Unable to validate database connection",ex);
+           throw new ComponentValidationException("Unable to validate database connection\n",ex.getMessage());
        }
     }
 
