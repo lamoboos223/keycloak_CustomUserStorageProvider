@@ -1,5 +1,5 @@
 /**
- * 
+ * Lama Alosaimi
  */
 package gov.twk.auth.provider.user;
 
@@ -50,8 +50,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         return getUserByUsername(sid.getExternalId(),realm);
     }
 
-
-
     @Override
     public UserModel getUserByEmail(String email, RealmModel realm) {
 //        log.info("[I48] getUserByEmail({})",email);
@@ -86,7 +84,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         // In our case, password is the only type of credential, so we always return 'true' if
         // this is the credentialType
         return supportsCredentialType(credentialType);
-//        return true;
     }
 
 //    TODO: what if there's some salt in the hash
@@ -99,7 +96,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         StorageId sid = new StorageId(user.getId());
         String username = sid.getExternalId();
         String passwordHash = model.get(CustomUserStorageProviderConstants.CONFIG_KEY_USER_PASSWORD_HASH_NAME);
-        log.info("Hash Function is: " + passwordHash);
 
         try{
             String query = String.format("select %s from %s where %s = ?",
@@ -142,8 +138,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         }
     }
 
-    // UserQueryProvider implementation
-
     @Override
     public int getUsersCount(RealmModel realm) {
 //        log.info("[I93] getUsersCount: realm={}", realm.getName() );
@@ -160,8 +154,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
             throw new RuntimeException("Database error:" + ex.getMessage(),ex);
         }
     }
-
-
 
     @Override
     public List<UserModel> searchForUser(String search, RealmModel realm) {
@@ -337,7 +329,6 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         return userRepresentation;
     }
 
-
     private ArrayList <String> getUserRoles(String username){
         ArrayList <String> roles = new ArrayList<>();
         try{
@@ -359,6 +350,7 @@ public class CustomUserStorageProvider implements UserStorageProvider, UserLooku
         }
         return roles;
     }
+
     @Override
     public UserModel addUser(RealmModel realmModel, String s) {
         return null;

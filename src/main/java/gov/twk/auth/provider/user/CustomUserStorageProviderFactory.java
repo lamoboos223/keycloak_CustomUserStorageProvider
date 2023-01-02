@@ -3,7 +3,6 @@ package gov.twk.auth.provider.user;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.component.ComponentValidationException;
@@ -12,64 +11,60 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.provider.ProviderConfigurationBuilder;
 import org.keycloak.storage.UserStorageProviderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static java.util.Arrays.asList;
 
 @Slf4j
 public class CustomUserStorageProviderFactory implements UserStorageProviderFactory<CustomUserStorageProvider> {
+
     protected final List<ProviderConfigProperty> configMetadata;
-    
+
+
     public CustomUserStorageProviderFactory() {
-//        log.info("[I24] CustomUserStorageProviderFactory created");
-        
-        
-        // Create config metadata
         configMetadata = ProviderConfigurationBuilder.create()
-        .property()
-                .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_TYPE)
-                .label("Database Type")
-                .type(ProviderConfigProperty.LIST_TYPE)
-                .defaultValue("MSSQL")
-                .options(asList("MSSQL", "Postgres", "MySQL"))
-                .helpText("Database type")
-                .add()
-        .property()
-                .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_NAME)
-                .label("Database Name")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("myolddb")
-                .helpText("Database name for connecting")
-                .add()
-        .property()
-                .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_IP)
-                .label("Database IP Address")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("127.0.0.1")
-                .helpText("Database IP Address")
-                .add()
-        .property()
-                .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_PORT)
-                .label("Database Port")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .defaultValue("1433")
-                .helpText("Database Port")
-                .add()
-        .property()
-                .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_USERNAME)
-                .label("Database User")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .helpText("Username used to connect to the database")
-                .defaultValue("sa")
-                .add()
-        .property()
-                .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_PASSWORD)
-                .label("Database Password")
-                .type(ProviderConfigProperty.STRING_TYPE)
-                .helpText("Password used to connect to the database")
-                .defaultValue("Keycloak@123")
-                .secret(true)
-                .add()
+            .property()
+                    .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_TYPE)
+                    .label("Database Type")
+                    .type(ProviderConfigProperty.LIST_TYPE)
+                    .defaultValue("MSSQL")
+                    .options(asList("MSSQL", "Postgres", "MySQL"))
+                    .helpText("Database type")
+                    .add()
+            .property()
+                    .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_NAME)
+                    .label("Database Name")
+                    .type(ProviderConfigProperty.STRING_TYPE)
+                    .defaultValue("myolddb")
+                    .helpText("Database name for connecting")
+                    .add()
+            .property()
+                    .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_IP)
+                    .label("Database IP Address")
+                    .type(ProviderConfigProperty.STRING_TYPE)
+                    .defaultValue("127.0.0.1")
+                    .helpText("Database IP Address")
+                    .add()
+            .property()
+                    .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_PORT)
+                    .label("Database Port")
+                    .type(ProviderConfigProperty.STRING_TYPE)
+                    .defaultValue("1433")
+                    .helpText("Database Port")
+                    .add()
+            .property()
+                    .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_USERNAME)
+                    .label("Database User")
+                    .type(ProviderConfigProperty.STRING_TYPE)
+                    .helpText("Username used to connect to the database")
+                    .defaultValue("sa")
+                    .add()
+            .property()
+                    .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_PASSWORD)
+                    .label("Database Password")
+                    .type(ProviderConfigProperty.STRING_TYPE)
+                    .helpText("Password used to connect to the database")
+                    .defaultValue("Keycloak@123")
+                    .secret(true)
+                    .add()
             .property()
                 .name(CustomUserStorageProviderConstants.CONFIG_KEY_DB_USERS_TABLE_NAME)
                 .label("Users Table Name")
@@ -140,20 +135,19 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
                 .defaultValue("roleName")
                 .helpText("Name of the role column in the roles table, keep it empty if no roles apply")
                 .add()
-          .property()
-            .name(CustomUserStorageProviderConstants.CONFIG_KEY_VALIDATION_QUERY)
-            .label("SQL Validation Query")
-            .type(ProviderConfigProperty.STRING_TYPE)
-            .helpText("SQL query used to validate a connection")
-            .defaultValue("select 1")
-            .add()
+            .property()
+                .name(CustomUserStorageProviderConstants.CONFIG_KEY_VALIDATION_QUERY)
+                .label("SQL Validation Query")
+                .type(ProviderConfigProperty.STRING_TYPE)
+                .helpText("SQL query used to validate a connection")
+                .defaultValue("select 1")
+                .add()
           .build();   
           
     }
 
     @Override
     public CustomUserStorageProvider create(KeycloakSession ksession, ComponentModel model) {
-//        log.info("[I63] creating new CustomUserStorageProvider");
         Connection connection = null;
         try {
             connection = DbUtil.getConnection(model);
@@ -169,7 +163,6 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
     }
 
     
-    // Configuration support methods
     @Override
     public List<ProviderConfigProperty> getConfigProperties() {
         return configMetadata;
@@ -178,23 +171,18 @@ public class CustomUserStorageProviderFactory implements UserStorageProviderFact
     @Override
     public void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
        try (Connection c = DbUtil.getConnection(config)) {
-//           log.info("[I84] Testing connection..." );
            c.createStatement().execute(config.get(CustomUserStorageProviderConstants.CONFIG_KEY_VALIDATION_QUERY));
-//           log.info("[I92] Connection OK !" );
        }
        catch(Exception ex) {
-//           log.warn("[W94] Unable to validate connection: ex={}", ex.getMessage());
            throw new ComponentValidationException("Unable to validate database connection",ex);
        }
     }
 
     @Override
     public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-//        log.info("[I94] onUpdate()" );
     }
 
     @Override
     public void onCreate(KeycloakSession session, RealmModel realm, ComponentModel model) {
-//        log.info("[I99] onCreate()" );
     }
 }
