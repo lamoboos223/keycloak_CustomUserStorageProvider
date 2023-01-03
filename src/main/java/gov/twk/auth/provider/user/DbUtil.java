@@ -33,7 +33,7 @@ public class DbUtil {
                     config.get(CONFIG_KEY_DB_USERNAME),
                     config.get(CONFIG_KEY_DB_PASSWORD));
         }catch (SQLException e){
-            log.error(e.getMessage());
+//            log.error(e.getMessage());
         }
         return null;
     }
